@@ -1,4 +1,3 @@
-
 #include <RedBot.h>
 
 RedBotSensor left_sen = RedBotSensor(A8);
@@ -44,7 +43,7 @@ void setup()
   Serial.println("IR Sensor Readings:: ");
   delay(1000);
 
-  
+
 }
 
 void loop()
@@ -56,46 +55,96 @@ void loop()
   Serial.println();
 
 
-  //data_sheet
+  //Programação
+  right_sen.read();
+  left_sen.read();
 
-  forward();
 
+  //se o sensor esquerdo detectar branco
   if (left_sen.read() < branco)
-  {
+  {// caso a resp. seja SIM, entrará nas perguntas secundárias
+
+    //se o sensor direito detectou branco
     if (right_sen.read() < branco)
-    {//linha reta
-      forward();
-      right_sen.read();
-      left_sen.read();
+    { //Ambos detectaram Branco, robô está reto
+
+      do {
+        forward();
+        right_sen.read();
+        left_sen.read();
+      }
+      while ((left_sen.read() < branco) && (right_sen.read() < branco));
     }
 
-    else
-    {//somente o sensor DIREITO está detectando o preto
-      do{
+    else //sensor DIREITO não está no branco, faremos então as seguintes perguntas:
+    { 
+      //1ª pergunta: sensor direito está detectando preto?
+     if (right_sen.read() >lineStandard)
+      { // Se SIM, o robô executará a função "left()"
+        
+        do{
         left();
         right_sen.read();
-        left_sen.read(); 
-      } 
-      while (right_sen.read() > lineStandard);
-    }
-  }
-  else{
-    if (right_sen.read() < branco) {
-      if (left_sen.read() < branco){
-        //ambos detectaram PRETO
-        forward();
+        left_sen.read();
+        }
+        while(right_sen.read() >lineStandard);
+        
       }
-      else
-      {//somente o sensor ESQUERDO está detectando o preto
+      //2ª pergunta: sensor direito detectou verde?
+      else if((right_sen.read() > vvm) && (right_sen.read() < vvM))
+        {//sensor DIREITO detectou VERDE
+          forward();
+          delay(200);
+          right();
+          delay(1000);
+        }
+        
+    }
+    
+  }
+
+  else
+  {
+    if(left_sen.read() > lineStandard)
+    {
+      if(right_sen.read > lineStandard){
+        //encruzilhada
+        do{
+          forward();
+          right_sen.read();
+          left_sen.read();
+        }
+        while(right_sen.read()>lineStandard) && (left_sen.read()>lineStandard);
+        
+      }
+      else{
+        //somente o sensor ESQUERDO detectou PRETO
         do{
           right();
           right_sen.read();
           left_sen.read();
         }
-        while (left_sen.read() >lineStandard);
+        while (left_sen.read() > lineStandard);
       }
     }
+
+    else if ((left_sen.read() > vvm) && (left_sen.read() < vvM)){
+      
+      if((right_sen.read() > vvm) && (right_sen.read() <vvM)){
+        //beco sem saída
+        right();
+        delay(2000);
+      }
+      else{
+        forward();
+        delay(200);
+        left();
+        delay(1000)
+      }
+    }
+    
   }
+
   delay(0);
 }
 
