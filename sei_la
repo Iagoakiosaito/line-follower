@@ -18,9 +18,9 @@ RedBotSensor right_sen = RedBotSensor(A5);
 #define en2 5
 #define in3 4
 #define in4 3
-int lineStandard = 700;
+int lineStandard = 650;
 
-
+#define BETWEEN(value, min, max) (value < max && value > min)
 
 void setup()
 { pinMode(in1, OUTPUT);
@@ -41,67 +41,56 @@ void loop()
 
   Serial.print(right_sen.read());
   Serial.println();
-  delay(20);
 
 
   //data_sheet
 
-  if ((left_sen.read() < 370 ) && (right_sen.read() < 370))
+  if ((left_sen.read() < 340 ) && (right_sen.read() < 340))
   {
-  
+
       forward();
       right_sen.read();
       left_sen.read();
    
   }
 
-  if (right_sen.read() > lineStandard)
+  else if (right_sen.read() > lineStandard)
   { //left
-
+   
       left();
-      right_sen.read();
 
-  
+
   }
   //data_sheet
 
   else if (left_sen.read() > lineStandard)
   { //right
 
-
+  
       right() ;
 
-      left_sen.read();
-
-
+ 
 
   }
   if ((left_sen.read() > lineStandard) && (right_sen.read() > lineStandard) )
   {
 
-   
       forward();
   
 
   }
   else
   {
-    //parte do verdim
-    if ((left_sen.read() >=400) && (left_sen.read() <=470))
-      {
-        left();
-        delay(2500);
-      }
-    
-  
+   
+  }
+  delay(0);  // add a delay to decrease sensitivity.
 }
-}
-
+          
 void right() {
-  analogWrite(en1,80);
-  analogWrite(en2,80);
+  analogWrite(en1, 90);
+  analogWrite(en2, 90);
   digitalWrite(in1, LOW);
-  digitalWrite(in2, LOW);
+  digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
 }
@@ -119,22 +108,22 @@ void left() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
-  digitalWrite(in4, LOW);
+  digitalWrite(in4, HIGH);
 }
 void forward() {
-  analogWrite(en1, 80);
-  analogWrite(en2, 80);
+  analogWrite(en1, 100);
+  analogWrite(en2, 100);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
 }
-void back(){
+void back() {
 
-   analogWrite(en1, 80);
+  analogWrite(en1, 80);
   analogWrite(en2, 80);
   digitalWrite(in1, LOW);
-  digitalWrite(in2,HIGH);
+  digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
 }
