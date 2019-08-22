@@ -1,0 +1,237 @@
+//Definição dos pinos dos motores
+
+//--------------
+//motor esquerdo
+#define en1 9
+#define in1 8
+#define in2 7
+//motor direito
+#define en2 5
+#define in3 4
+#define in4 3
+//--------------
+
+//==========função criada para facilitar o código===========
+#define BETWEEN(value, min, max) (value < max && value > min)
+//==========================================================
+
+//Pinos de conexao do sensor direito
+#define pinS0_D 53
+#define pinS1_D 52
+#define pinS2_D 51
+#define pinS3_D 50
+#define pinOut_D 49
+
+//pinos de conexao do sensor esquerdo
+#define pinS0_E 45
+#define pinS1_E 44
+#define pinS2_E 43
+#define pinS3_E 42
+#define pinOut_E 41
+
+//variáveis utilizadas no código
+//-------------------------------
+unsigned int valorVermelho_D = 0;
+unsigned int valorVerde_D = 0;
+unsigned int valorAzul_D = 0;
+unsigned int valorBranco_D = 0;
+//-------------------------------
+
+//-------------------------------
+unsigned int valorVermelho_E = 0;
+unsigned int valorVerde_E = 0;
+unsigned int valorAzul_E = 0;
+unsigned int valorBranco_E = 0;
+//-------------------------------
+
+void detectaCor_D();
+void detectaCor_E();
+
+void setup()
+{
+  //---------MOTORES---------
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  pinMode(en1, OUTPUT);
+  pinMode(en2, OUTPUT);
+  //-------------------------
+
+  //-----sensor DIREITO------
+  pinMode(pinS0_D, OUTPUT);
+  pinMode(pinS1_D, OUTPUT);
+  pinMode(pinS2_D, OUTPUT);
+  pinMode(pinS3_D, OUTPUT);
+  pinMode(pinOut_D, INPUT);
+  //-------------------------
+
+  //-----sensor ESQUERDO-----
+  pinMode(pinS0_E, OUTPUT);
+  pinMode(pinS1_E, OUTPUT);
+  pinMode(pinS2_E, OUTPUT);
+  pinMode(pinS3_E, OUTPUT);
+  pinMode(pinOut_E, INPUT);
+  //-------------------------
+
+  Serial.begin(9600);
+
+  //---inicializa os sensores---
+  digitalWrite(pinS0_D, HIGH);
+  digitalWrite(pinS1_D, LOW);
+
+  digitalWrite(pinS0_E, HIGH);
+  digitalWrite(pinS1_E, LOW);
+  //----------------------------
+
+}
+
+void loop()
+{
+  //Detecta a cor
+  detectaCor_D();
+  detectaCor_E();
+
+  //Mostra valores no serial monitor
+  Serial.print("Vermelho :");
+  Serial.print(valorVermelho_E);
+  Serial.print(" ");
+  Serial.print(valorVermelho_D);
+
+  Serial.print(" Verde : ");
+  Serial.print(valorVerde_E);
+  Serial.print(" ");
+  Serial.print(valorVerde_D);
+
+  Serial.print(" Azul : ");
+  Serial.print(valorAzul_E);
+  Serial.print(" ");
+  Serial.print(valorAzul_D);
+
+  Serial.print(" Branco : ");
+  Serial.print(valorBranco_E);
+  Serial.print(" ");
+  Serial.print(valorBranco_D);
+  Serial.println();
+
+  //segue-preto
+
+
+  if ((valorBranco_D < 15) && (valorBranco_E < 15)) {
+    forward();
+  }
+  else if (valorBranco_D >= 18) { //sensor direito detectou preto
+    if (valorBranco_E >= 18) { //encruzilhada
+      forward();
+    }
+    else { //somente o direito detectou
+      left();
+    }
+  }
+  else if (valorBranco_E >= 18) { //sensor esquerdo detectou preto
+
+    right();
+  }
+
+
+  else if ((BETWEEN(valorVerde_D, 50, 140)) && (BETWEEN(valorBranco_D, 16, 20))) {
+    if ((BETWEEN(valorVerde_E, 50, 140)) && (BETWEEN(valorBranco_E, 16, 20))){
+      left();
+      delay(5000);
+    }
+
+  else{
+    left();
+    delay(2500);
+
+
+  }
+
+}
+}
+/*--------------------Função de leitura do sensor de cor DIREITO----------------*/
+void detectaCor_D() {
+  //Vermelho
+  digitalWrite(pinS2_D, LOW);
+  digitalWrite(pinS3_D, LOW);
+  valorVermelho_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+
+  //Sem filtro
+  digitalWrite(pinS2_D, HIGH);
+  valorBranco_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+
+  //Azul
+  digitalWrite(pinS2_D, LOW);
+  digitalWrite(pinS3_D, HIGH);
+  valorAzul_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+
+  //Verde
+  digitalWrite(pinS2_D, HIGH);
+  valorVerde_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+}
+
+/*--------------------Função de leitura do sensor de cor ESQUERDO----------------*/
+void detectaCor_E() {
+  //Vermelho
+  digitalWrite(pinS2_E, LOW);
+  digitalWrite(pinS3_E, LOW);
+  valorVermelho_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+
+  //Sem filtro
+  digitalWrite(pinS2_E, HIGH);
+  valorBranco_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+
+  //Azul
+  digitalWrite(pinS2_E, LOW);
+  digitalWrite(pinS3_E, HIGH);
+  valorAzul_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+
+  //Verde
+  digitalWrite(pinS2_E, HIGH);
+  valorVerde_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+}
+/*===============================================================================*/
+
+
+/*Funções de direções dos motores*/
+void right() {
+  analogWrite(en1, 90);
+  analogWrite(en2, 95);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+void Stop () {
+  analogWrite(en1, 0);
+  analogWrite(en2, 0);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+}
+void left() {
+  analogWrite(en1, 90);
+  analogWrite(en2, 95);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+}
+void forward() {
+  analogWrite(en1, 90);
+  analogWrite(en2, 95);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+void back() {
+
+  analogWrite(en1, 90);
+  analogWrite(en2, 95);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+}
