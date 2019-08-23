@@ -1,3 +1,35 @@
+/*Valores para o SEGUE-LINHA DO SENSOR DIREITO*/
+
+int Branco_D = 6;
+
+int Pretomin_D = 7;
+int Pretomax_D = 10;
+
+int Verdemin_D = 10;
+int Verdemax_D = 25;
+int VerdeGmin_D = 40;
+int VerdeGmax_D = 65;
+int VermelhoRmin_D = 50 ;
+int VermelhoRmax_D = 70 ;
+
+
+
+/*Valores para o SEGUE-LINHA DO SENSOR ESQUERDO*/
+
+int Branco_E = 6;
+
+int Pretomin_E = 7;
+int Pretomax_E = 10;
+
+int Verdemin_E = 8;
+int Verdemax_E = 20;
+int VerdeGmin_E = 30;
+int VerdeGmax_E = 60;
+int VermelhoRmin_E = 50 ;
+int VermelhoRmax_E = 70 ;
+
+
+
 //Definição dos pinos dos motores
 
 //--------------
@@ -84,6 +116,9 @@ void setup()
   digitalWrite(pinS1_E, LOW);
   //----------------------------
 
+
+  delay(5000);
+
 }
 
 void loop()
@@ -117,37 +152,45 @@ void loop()
   //segue-preto
 
 
-  if ((valorBranco_D < 15) && (valorBranco_E < 15)) {
+  if ((valorBranco_D <= Branco_D) && (valorBranco_E <= Branco_E)) {
     forward();
   }
-  else if (valorBranco_D >= 18) { //sensor direito detectou preto
-    if (valorBranco_E >= 18) { //encruzilhada
+
+  else if ((BETWEEN(valorBranco_E, Pretomin_E, Pretomax_E)) && (BETWEEN(valorBranco_D, Pretomin_D, Pretomax_D))) {//encruzilhada primaria
+    forward();
+  }
+
+  else if (BETWEEN(valorBranco_D, Pretomin_D, Pretomax_D)) { //sensor direito detectou preto
+    if (BETWEEN(valorBranco_E, Pretomin_E, Pretomax_E)) { //encruzilhada
       forward();
     }
     else { //somente o direito detectou
       left();
     }
   }
-  else if (valorBranco_E >= 18) { //sensor esquerdo detectou preto
+  else if (BETWEEN(valorBranco_E, Pretomin_E, Pretomax_E)) { //sensor esquerdo detectou preto
+    if (BETWEEN(valorBranco_D, Pretomin_D, Pretomax_D)) {
+      forward();
+    }
 
     right();
   }
 
 
-  else if ((BETWEEN(valorVerde_D, 50, 140)) && (BETWEEN(valorBranco_D, 16, 20))) {
-    if ((BETWEEN(valorVerde_E, 50, 140)) && (BETWEEN(valorBranco_E, 16, 20))){
-      left();
-      delay(5000);
-    }
+  else if ((BETWEEN(valorVerde_E, VerdeGmin_E, VerdeGmax_E)) && (BETWEEN(valorBranco_E, Verdemin_E, Verdemax_E))) {
 
-  else{
-    left();
-    delay(2500);
-
-
+    forward();
+    delay(200);
+    right();
+    delay(700);
   }
+  else if ((BETWEEN(valorVerde_D, VerdeGmin_D, VerdeGmax_D)) && (BETWEEN(valorBranco_D, Verdemin_D, Verdemax_D))) {
 
-}
+    forward();
+    delay(200);
+    left();
+    delay(1500);
+  }
 }
 /*--------------------Função de leitura do sensor de cor DIREITO----------------*/
 void detectaCor_D() {
@@ -195,8 +238,8 @@ void detectaCor_E() {
 
 /*Funções de direções dos motores*/
 void right() {
-  analogWrite(en1, 90);
-  analogWrite(en2, 95);
+  analogWrite(en1, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
@@ -211,16 +254,16 @@ void Stop () {
   digitalWrite(in4, LOW);
 }
 void left() {
-  analogWrite(en1, 90);
-  analogWrite(en2, 95);
+  analogWrite(en1, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
 }
 void forward() {
-  analogWrite(en1, 90);
-  analogWrite(en2, 95);
+  analogWrite(en1, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
@@ -228,8 +271,8 @@ void forward() {
 }
 void back() {
 
-  analogWrite(en1, 90);
-  analogWrite(en2, 95);
+  analogWrite(en1, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
