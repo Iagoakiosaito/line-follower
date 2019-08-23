@@ -1,15 +1,44 @@
+/*Valores para o SEGUE-LINHA DO SENSOR DIREITO*/
 
-#include <RedBot.h>
+int Branco_D = 6;
 
-RedBotSensor left_sen = RedBotSensor(A8);
+int Pretomin_D = 7;
+int Pretomax_D = 10;
 
-RedBotSensor right_sen = RedBotSensor(A5);
-//data_sheet
-// constants that are used in the code. lineStandard is the level to detect
-// if the sensor is on the line or not. If the sensor value is greater than this
-// the sensor is above a DARK line.
-//
-// SPEED sets the nominal speed
+int Verdemin_D = 10;
+int Verdemax_D = 25;
+int VerdeGmin_D = 40;
+int VerdeGmax_D = 65;
+int VermelhoRmin_D = 50 ;
+int VermelhoRmax_D = 70 ;
+
+
+
+/*Valores para o SEGUE-LINHA DO SENSOR ESQUERDO*/
+
+int Branco_E = 6;
+
+int Pretomin_E = 7;
+int Pretomax_E = 10;
+
+int Verdemin_E = 8;
+int Verdemax_E = 20;
+int VerdeGmin_E = 30;
+int VerdeGmax_E = 60;
+int VermelhoRmin_E = 50 ;
+int VermelhoRmax_E = 70 ;
+
+
+
+#include <Ultrasonic.h>
+//pinos sensor ultrassônico
+#define pino_trigger 34
+#define pino_echo 35
+Ultrasonic ultrasonic(pino_trigger, pino_echo);
+
+//Definição dos pinos dos motores
+
+//--------------
 //motor esquerdo
 #define en1 9
 #define in1 8
@@ -18,77 +47,236 @@ RedBotSensor right_sen = RedBotSensor(A5);
 #define en2 5
 #define in3 4
 #define in4 3
-int lineStandard = 650;
+//--------------
 
+//==========função criada para facilitar o código===========
 #define BETWEEN(value, min, max) (value < max && value > min)
+//==========================================================
+
+//Pinos de conexao do sensor direito
+#define pinS0_D 53
+#define pinS1_D 52
+#define pinS2_D 51
+#define pinS3_D 50
+#define pinOut_D 49
+
+//pinos de conexao do sensor esquerdo
+#define pinS0_E 45
+#define pinS1_E 44
+#define pinS2_E 43
+#define pinS3_E 42
+#define pinOut_E 41
+
+
+
+
+//variáveis utilizadas no código
+//-------------------------------
+unsigned int valorVermelho_D = 0;
+unsigned int valorVerde_D = 0;
+unsigned int valorAzul_D = 0;
+unsigned int valorBranco_D = 0;
+//-------------------------------
+
+//-------------------------------
+unsigned int valorVermelho_E = 0;
+unsigned int valorVerde_E = 0;
+unsigned int valorAzul_E = 0;
+unsigned int valorBranco_E = 0;
+//-------------------------------
+
+void detectaCor_D();
+void detectaCor_E();
 
 void setup()
-{ pinMode(in1, OUTPUT);
+{
+  //---------MOTORES---------
+  pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
   pinMode(en1, OUTPUT);
   pinMode(en2, OUTPUT);
+  //-------------------------
+
+  //-----sensor DIREITO------
+  pinMode(pinS0_D, OUTPUT);
+  pinMode(pinS1_D, OUTPUT);
+  pinMode(pinS2_D, OUTPUT);
+  pinMode(pinS3_D, OUTPUT);
+  pinMode(pinOut_D, INPUT);
+  //-------------------------
+
+  //-----sensor ESQUERDO-----
+  pinMode(pinS0_E, OUTPUT);
+  pinMode(pinS1_E, OUTPUT);
+  pinMode(pinS2_E, OUTPUT);
+  pinMode(pinS3_E, OUTPUT);
+  pinMode(pinOut_E, INPUT);
+  //-------------------------
+
   Serial.begin(9600);
-  Serial.println("IR Sensor Readings:: ");
-  delay(1000);
+
+  //---inicializa os sensores---
+  digitalWrite(pinS0_D, HIGH);
+  digitalWrite(pinS1_D, LOW);
+
+  digitalWrite(pinS0_E, HIGH);
+  digitalWrite(pinS1_E, LOW);
+  //----------------------------
+
+
+  delay(5000);
+
 }
 
 void loop()
 {
-  Serial.print(left_sen.read());
-  Serial.print("\t");
+  //Detecta a cor
+  detectaCor_D();
+  detectaCor_E();
 
-  Serial.print(right_sen.read());
+  //print serial do ultrassônico
+  float cmMsec;
+  long microsec = ultrasonic.timing();
+  cmMsec = ultrasonic.convert(microsec, Ultrasonic::CM);
+
+
+  //Serial print do ultrassônico
+  /*
+    Serial.print("Distancia em cm: ");
+    Serial.println(cmMsec);
+  */
+
+
+  //Mostra valores no serial monitor
+  Serial.print("Vermelho :");
+  Serial.print(valorVermelho_E);
+  Serial.print(" ");
+  Serial.print(valorVermelho_D);
+
+  Serial.print(" Verde : ");
+  Serial.print(valorVerde_E);
+  Serial.print(" ");
+  Serial.print(valorVerde_D);
+
+  Serial.print(" Azul : ");
+  Serial.print(valorAzul_E);
+  Serial.print(" ");
+  Serial.print(valorAzul_D);
+
+  Serial.print(" Branco : ");
+  Serial.print(valorBranco_E);
+  Serial.print(" ");
+  Serial.print(valorBranco_D);
   Serial.println();
 
+  //segue-preto
 
-  //data_sheet
-
-  if ((left_sen.read() < 340 ) && (right_sen.read() < 340))
-  {
-
-      forward();
-      right_sen.read();
-      left_sen.read();
-   
+  if (cmMsec <= 5.0) {
+    right();
+    delay(900);
+    forward();
+    delay(2000);
+    left();
+    delay(900);
+    forward();
+    delay(3000);
+    left();
+    delay(700);
+    forward();
+    delay(1000);
   }
 
-  else if (right_sen.read() > lineStandard)
-  { //left
-   
+
+  if ((valorBranco_D <= Branco_D) && (valorBranco_E <= Branco_E)) {
+    forward();
+  }
+
+  else if ((BETWEEN(valorBranco_E, Pretomin_E, Pretomax_E)) && (BETWEEN(valorBranco_D, Pretomin_D, Pretomax_D))) {//encruzilhada primaria
+    forward();
+  }
+
+  else if (BETWEEN(valorBranco_D, Pretomin_D, Pretomax_D)) { //sensor direito detectou preto
+    if (BETWEEN(valorBranco_E, Pretomin_E, Pretomax_E)) { //encruzilhada
+      forward();
+    }
+    else { //somente o direito detectou
       left();
-
-
+    }
   }
-  //data_sheet
-
-  else if (left_sen.read() > lineStandard)
-  { //right
-
-  
-      right() ;
-
- 
-
-  }
-  if ((left_sen.read() > lineStandard) && (right_sen.read() > lineStandard) )
-  {
-
+  else if (BETWEEN(valorBranco_E, Pretomin_E, Pretomax_E)) { //sensor esquerdo detectou preto
+    if (BETWEEN(valorBranco_D, Pretomin_D, Pretomax_D)) {
       forward();
-  
+    }
 
+    right();
   }
-  else
-  {
-   
+
+
+  else if ((BETWEEN(valorVerde_E, VerdeGmin_E, VerdeGmax_E)) && (BETWEEN(valorBranco_E, Verdemin_E, Verdemax_E))) {
+
+    forward();
+    delay(200);
+    right();
+    delay(700);
   }
-  delay(0);  // add a delay to decrease sensitivity.
+  else if ((BETWEEN(valorVerde_D, VerdeGmin_D, VerdeGmax_D)) && (BETWEEN(valorBranco_D, Verdemin_D, Verdemax_D))) {
+
+    forward();
+    delay(200);
+    left();
+    delay(1500);
+  }
 }
-          
+/*--------------------Função de leitura do sensor de cor DIREITO----------------*/
+void detectaCor_D() {
+  //Vermelho
+  digitalWrite(pinS2_D, LOW);
+  digitalWrite(pinS3_D, LOW);
+  valorVermelho_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+
+  //Sem filtro
+  digitalWrite(pinS2_D, HIGH);
+  valorBranco_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+
+  //Azul
+  digitalWrite(pinS2_D, LOW);
+  digitalWrite(pinS3_D, HIGH);
+  valorAzul_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+
+  //Verde
+  digitalWrite(pinS2_D, HIGH);
+  valorVerde_D = pulseIn(pinOut_D, digitalRead(pinOut_D) == HIGH ? LOW : HIGH);
+}
+
+/*--------------------Função de leitura do sensor de cor ESQUERDO----------------*/
+void detectaCor_E() {
+  //Vermelho
+  digitalWrite(pinS2_E, LOW);
+  digitalWrite(pinS3_E, LOW);
+  valorVermelho_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+
+  //Sem filtro
+  digitalWrite(pinS2_E, HIGH);
+  valorBranco_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+
+  //Azul
+  digitalWrite(pinS2_E, LOW);
+  digitalWrite(pinS3_E, HIGH);
+  valorAzul_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+
+  //Verde
+  digitalWrite(pinS2_E, HIGH);
+  valorVerde_E = pulseIn(pinOut_E, digitalRead(pinOut_E) == HIGH ? LOW : HIGH);
+}
+/*===============================================================================*/
+
+
+/*Funções de direções dos motores*/
 void right() {
-  analogWrite(en1, 90);
-  analogWrite(en2, 90);
+  analogWrite(en1, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
@@ -103,8 +291,8 @@ void Stop () {
   digitalWrite(in4, LOW);
 }
 void left() {
-  analogWrite(en1, 90);
-  analogWrite(en2, 90);
+  analogWrite(en1, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -112,7 +300,7 @@ void left() {
 }
 void forward() {
   analogWrite(en1, 100);
-  analogWrite(en2, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
@@ -120,8 +308,8 @@ void forward() {
 }
 void back() {
 
-  analogWrite(en1, 80);
-  analogWrite(en2, 80);
+  analogWrite(en1, 100);
+  analogWrite(en2, 105);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
