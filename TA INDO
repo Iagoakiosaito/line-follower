@@ -30,6 +30,12 @@ int VermelhoRmax_E = 70 ;
 
 
 
+#include <Ultrasonic.h>
+//pinos sensor ultrassônico
+#define pino_trigger 34
+#define pino_echo 35
+Ultrasonic ultrasonic(pino_trigger, pino_echo);
+
 //Definição dos pinos dos motores
 
 //--------------
@@ -60,6 +66,9 @@ int VermelhoRmax_E = 70 ;
 #define pinS2_E 43
 #define pinS3_E 42
 #define pinOut_E 41
+
+
+
 
 //variáveis utilizadas no código
 //-------------------------------
@@ -127,6 +136,19 @@ void loop()
   detectaCor_D();
   detectaCor_E();
 
+  //print serial do ultrassônico
+  float cmMsec;
+  long microsec = ultrasonic.timing();
+  cmMsec = ultrasonic.convert(microsec, Ultrasonic::CM);
+
+
+  //Serial print do ultrassônico
+  /*
+  Serial.print("Distancia em cm: ");
+  Serial.println(cmMsec);
+   */
+
+
   //Mostra valores no serial monitor
   Serial.print("Vermelho :");
   Serial.print(valorVermelho_E);
@@ -150,6 +172,8 @@ void loop()
   Serial.println();
 
   //segue-preto
+
+ 
 
 
   if ((valorBranco_D <= Branco_D) && (valorBranco_E <= Branco_E)) {
